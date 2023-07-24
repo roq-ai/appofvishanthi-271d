@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model assignment {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?  @db.VarChar(255)
+  course_id   String?  @db.Uuid
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  updated_at  DateTime @default(now()) @db.Timestamp(6)
+  course      course?  @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model contest {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?  @db.VarChar(255)
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  updated_at  DateTime @default(now()) @db.Timestamp(6)
+}
+
+model course {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String             @db.VarChar(255)
+  description      String?            @db.VarChar(255)
+  instructor_id    String?            @db.Uuid
+  created_at       DateTime           @default(now()) @db.Timestamp(6)
+  updated_at       DateTime           @default(now()) @db.Timestamp(6)
+  assignment       assignment[]
+  user             user?              @relation(fields: [instructor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  examination      examination[]
+  student_progress student_progress[]
+}
+
+model examination {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?  @db.VarChar(255)
+  course_id   String?  @db.Uuid
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  updated_at  DateTime @default(now()) @db.Timestamp(6)
+  course      course?  @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model job_training {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?  @db.VarChar(255)
+  trainer_id  String?  @db.Uuid
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  updated_at  DateTime @default(now()) @db.Timestamp(6)
+  user        user?    @relation(fields: [trainer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model organization {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description String?  @db.VarChar(255)
+  image       String?  @db.VarChar(255)
+  name        String   @db.VarChar(255)
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  updated_at  DateTime @default(now()) @db.Timestamp(6)
+  user_id     String   @db.Uuid
+  tenant_id   String   @db.VarChar(255)
+  user        user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model student_progress {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  student_id String?  @db.Uuid
+  course_id  String?  @db.Uuid
+  progress   Int?
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  course     course?  @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       user?    @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String             @unique @db.VarChar(255)
+  firstName        String?            @db.VarChar(255)
+  lastName         String?            @db.VarChar(255)
+  roq_user_id      String             @db.VarChar(255)
+  tenant_id        String             @db.VarChar(255)
+  created_at       DateTime           @default(now()) @db.Timestamp(6)
+  updated_at       DateTime           @default(now()) @db.Timestamp(6)
+  course           course[]
+  job_training     job_training[]
+  organization     organization[]
+  student_progress student_progress[]
+}
